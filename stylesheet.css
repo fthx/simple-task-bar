@@ -1,0 +1,53 @@
+.focused-app {
+  margin-left: 0px;
+  margin-right: 8px;
+  border: 0px solid rgba(255, 255, 255, 1);
+  border-radius: 0px;
+  padding: 0px;
+  border-top-width: 2px;
+  border-right-width: 0px;
+  border-bottom-width: 0px;
+  border-left-width: 0px;
+}
+
+.unfocused-app {
+  margin-left: 0px;
+  margin-right: 8px;
+  border: 0px hidden rgba(255, 255, 255, 0);
+  border-radius: 0px;
+  padding: 0px;
+  border-top-width: 2px;
+  border-right-width: 0px;
+  border-bottom-width: 0px;
+  border-left-width: 0px;
+}
+
+.hidden-app {
+  margin-left: 0px;
+  margin-right: 8px;
+  border: 0px hidden rgba(255, 255, 255, 0);
+  border-radius: 0px;
+  padding: 0px;
+  border-top-width: 2px;
+  border-right-width: 0px;
+  border-bottom-width: 0px;
+  border-left-width: 0px;
+}
+
+.desk-label-active {
+  margin-left: 12px;
+  margin-right: 12px;
+  /*background-color: rgba(233, 84, 32, 1);*/
+  color: rgba(255, 255, 255, 0.8);
+  border: 2px solid rgba(255, 255, 255, 0.8);
+  border-radius: 4px;
+}
+
+.desk-label-inactive {
+  margin-left: 12px;
+  margin-right: 12px;
+  /*background-color: rgba(233, 84, 32, 0.3);*/
+  color: rgba(255, 255, 255, 0.4);
+  border: 2px solid rgba(255, 255, 255, 0.4);
+  border-radius: 4px;
+}
