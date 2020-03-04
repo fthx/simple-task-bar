@@ -7,7 +7,6 @@
 const Lang = imports.lang;
 const St = imports.gi.St;
 const Main = imports.ui.main;
-//const Panel = imports.ui.panel;
 const Meta = imports.gi.Meta;
 const Shell = imports.gi.Shell;
 const Clutter = imports.gi.Clutter;
@@ -26,12 +25,14 @@ const WindowList = new Lang.Class({
 		this._restacked = global.display.connect('restacked', Lang.bind(this, this._updateMenu));
 		this._window_change_monitor = global.display.connect('window-left-monitor', Lang.bind(this, this._updateMenu));
 		this._workspace_removed = global.workspace_manager.connect('workspace-removed', Lang.bind(this, this._updateMenu));
+		this._workspace_changed = global.workspace_manager.connect('active-workspace-changed', Lang.bind(this, this._updateMenu));
 	},
 
 	_destroy: function() {
 		global.display.disconnect(this._restacked);
 		global.display.disconnect(this._window_change_monitor);
 		global.workspace_manager.disconnect(this._workspace_removed);
+		global.workspace_manager.disconnect(this._workspace_changed);
 		this.apps_menu.destroy();
     },
 
@@ -43,7 +44,6 @@ const WindowList = new Lang.Class({
 
         for ( let workspace_index=0; workspace_index<this.workspaces_count; ++workspace_index ) {
         
-            //this.workspace_name = Meta.prefs_get_workspace_name(workspace_index);
             let metaWorkspace = global.workspace_manager.get_workspace_by_index(workspace_index);
             this.windows = metaWorkspace.list_windows();
             
@@ -81,18 +81,23 @@ const WindowList = new Lang.Class({
                 }
             }
             
-            if (this.windows.length > 0) {
+            //if (this.windows.length > 0) {
+            	this.box = new St.Bin({visible: true, 
+        						reactive: true, can_focus: true, track_hover: true});
             	if (global.workspace_manager.get_active_workspace() === metaWorkspace) {
-        			this.workspace_label = new St.Label({style_class: 'desk-label-active',
+        			this.box.label = new St.Label({style_class: 'desk-label-active',
         											y_align: Clutter.ActorAlign.CENTER});
-        			this.workspace_label.set_text((" "+(workspace_index+1)+" ").toString());
-        			this.apps_menu.add_actor(this.workspace_label);}
+        		}
         		else {
-        			this.workspace_label = new St.Label({style_class: 'desk-label-inactive',
+        			this.box.label = new St.Label({style_class: 'desk-label-inactive',
         											y_align: Clutter.ActorAlign.CENTER});
-        			this.workspace_label.set_text((" "+(workspace_index+1)+" ").toString());
-        			this.apps_menu.add_actor(this.workspace_label);};
-        	};
+        		};
+        		this.box.label.set_text((" "+(workspace_index+1)+" ").toString());
+        		this.box.set_child(this.box.label);
+        		this.apps_menu.add_actor(this.box);
+        		this.box.connect('button-press-event', Lang.bind(this, function() {
+                							this._activateWorkspace(metaWorkspace); } ));
+        	//};
 
             for ( let i = 0; i < this.windows.length; ++i ) {
 	            let metaWindow = this.windows[i];
@@ -114,6 +119,16 @@ const WindowList = new Lang.Class({
                 this.apps_menu.add_actor(this.box);
             }
         }
+    },
+    
+    _activateWorkspace: function(ws) {
+    	if (global.workspace_manager.get_active_workspace() === ws) {
+    		Main.overview.toggle();
+    	}
+    	else {
+    		Main.overview.show();
+    	};
+    	ws.activate(global.get_current_time()); 
     },
 
     _activateWindow: function(ws, w) {
