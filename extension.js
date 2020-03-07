@@ -49,6 +49,7 @@ const WindowList = new Lang.Class({
         
             let metaWorkspace = global.workspace_manager.get_workspace_by_index(workspace_index);
             this.windows = metaWorkspace.list_windows();
+            this.windows = global.display.sort_windows_by_stacking(this.windows);
             
             if (workspace_index==0) {
             	this.sticky_windows = this.windows.filter(
