@@ -11,15 +11,18 @@ const Util = imports.misc.util;
 const Meta = imports.gi.Meta;
 const Shell = imports.gi.Shell;
 const Clutter = imports.gi.Clutter;
+const AppMenu = Main.panel.statusArea.appMenu;
 
-const ICON_SIZE = 22;
-const HIDDEN_OPACITY = 127;
+var ICON_SIZE = 22;
+var HIDDEN_OPACITY = 127;
 
 
 const WindowList = new Lang.Class({
 	Name: 'WindowList.WindowList',
 
 	_init: function(){
+		AppMenu._iconBox.hide();
+	
 		this.apps_menu = new St.BoxLayout({});
 		this.actor = this.apps_menu;
         this._updateMenu();
@@ -39,7 +42,7 @@ const WindowList = new Lang.Class({
 		this.apps_menu.destroy();
     },
 
-    _updateMenu: function() {
+    _updateMenu: function() {    	
     	this.apps_menu.destroy_all_children();
     
         this.tracker = Shell.WindowTracker.get_default();
@@ -49,7 +52,6 @@ const WindowList = new Lang.Class({
         
             let metaWorkspace = global.workspace_manager.get_workspace_by_index(workspace_index);
             this.windows = metaWorkspace.list_windows();
-            this.windows = global.display.sort_windows_by_stacking(this.windows);
             
             if (workspace_index==0) {
             	this.sticky_windows = this.windows.filter(
@@ -57,25 +59,28 @@ const WindowList = new Lang.Class({
                 		return !w.is_skip_taskbar() && w.is_on_all_workspaces();
             		}
             	);
-                for ( let i = 0; i < this.sticky_windows.length; ++i ) {
-                    let metaWindow = this.sticky_windows[i];
-					this.box = new St.Bin({visible: true, 
-        							reactive: true, can_focus: true, track_hover: true});
-					this.box.window = this.sticky_windows[i];
-					this.app = this.tracker.get_window_app(this.box.window);
-                	this.box.connect('button-press-event', Lang.bind(this, function() {
-                							this._activateWindow(metaWorkspace, metaWindow); } ));
-                	this.box.icon = this.app.create_icon_texture(ICON_SIZE);
-                	if (metaWindow.is_hidden()) {
-                		this.box.icon.set_opacity(HIDDEN_OPACITY); this.box.style_class = 'hidden-app';
-                	}
-                	else {
-                	 	if (metaWindow.has_focus()) {this.box.style_class = 'focused-app';}
-                	 	else {this.box.style_class = 'unfocused-app';}
-                	};
-               		this.box.set_child(this.box.icon);
-                	this.apps_menu.add_actor(this.box);
-                }
+            	for ( let i = 0; i < this.sticky_windows.length; ++i ) {
+	            	let metaWindow = this.sticky_windows[i];
+	            	let box = new St.Bin({visible: true, 
+        						reactive: true, can_focus: true, track_hover: true});
+	            	box.window = this.sticky_windows[i];
+	            	box.tooltip = box.window.get_title();
+	            	this.app = this.tracker.get_window_app(box.window);
+		            box.connect('button-press-event', Lang.bind(this, function() {
+		            							this._activateWindow(metaWorkspace, metaWindow); } ));
+		            box.icon = this.app.create_icon_texture(ICON_SIZE);
+		            if (metaWindow.is_hidden()) {
+		            	box.icon.set_opacity(HIDDEN_OPACITY); box.style_class = 'hidden-app';
+		            }
+		            else {
+		            	 if (metaWindow.has_focus()) {box.style_class = 'focused-app';}
+		            	 else {box.style_class = 'unfocused-app';}
+		            };
+		           	box.set_child(box.icon);
+		           	box.connect('notify::hover', Lang.bind(this, function() {
+		            							this._onHover(box, box.tooltip); } ));
+		            this.apps_menu.add_actor(box);
+            	}
             };
             
         	this.ws_box = new St.Bin({visible: true, 
@@ -101,24 +106,37 @@ const WindowList = new Lang.Class({
 
             for ( let i = 0; i < this.windows.length; ++i ) {
 	            let metaWindow = this.windows[i];
-	            this.box = new St.Bin({visible: true, 
+	            let box = new St.Bin({visible: true, 
         						reactive: true, can_focus: true, track_hover: true});
-	            this.box.window = this.windows[i];
-	            this.app = this.tracker.get_window_app(this.box.window);
-                this.box.connect('button-press-event', Lang.bind(this, function() {
+	            box.window = this.windows[i];
+	            box.tooltip = box.window.get_title();
+	            this.app = this.tracker.get_window_app(box.window);
+                box.connect('button-press-event', Lang.bind(this, function() {
                 							this._activateWindow(metaWorkspace, metaWindow); } ));
-                this.box.icon = this.app.create_icon_texture(ICON_SIZE);
+                box.icon = this.app.create_icon_texture(ICON_SIZE);
                 if (metaWindow.is_hidden()) {
-                	this.box.icon.set_opacity(HIDDEN_OPACITY); this.box.style_class = 'hidden-app';
+                	box.icon.set_opacity(HIDDEN_OPACITY); box.style_class = 'hidden-app';
                 }
                 else {
-                	 if (metaWindow.has_focus()) {this.box.style_class = 'focused-app';}
-                	 else {this.box.style_class = 'unfocused-app';}
+                	 if (metaWindow.has_focus()) {box.style_class = 'focused-app';}
+                	 else {box.style_class = 'unfocused-app';}
                 };
-               	this.box.set_child(this.box.icon);
-                this.apps_menu.add_actor(this.box);
+               	box.set_child(box.icon);
+               	box.connect('notify::hover', Lang.bind(this, function() {
+                							this._onHover(box, box.tooltip); } ));
+                this.apps_menu.add_actor(box);
             }
         }
+    },
+    
+    _onHover: function(b, tt) {
+    	if (b.hover) {
+    		AppMenu._label.set_text(tt);
+    	} else {
+    		if (global.display.get_focus_window()) {
+    			AppMenu._label.set_text(global.display.get_focus_window().get_title());
+    		}
+    	}
     },
     
     _activateWorkspace: function(ws) {
@@ -168,4 +186,5 @@ function enable() {
 
 function disable() {
 	windowlist._destroy();
+	AppMenu._iconBox.show();
 }
