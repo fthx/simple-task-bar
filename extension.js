@@ -44,6 +44,8 @@ const WindowList = new Lang.Class({
 
     _updateMenu: function() {    	
     	this.apps_menu.destroy_all_children();
+    	
+    	this._updateTitle();
     
         this.tracker = Shell.WindowTracker.get_default();
         this.workspaces_count = global.workspace_manager.get_n_workspaces();
@@ -64,6 +66,7 @@ const WindowList = new Lang.Class({
 	            	let box = new St.Bin({visible: true, 
         						reactive: true, can_focus: true, track_hover: true});
 	            	box.window = this.sticky_windows[i];
+	           		box.window.connect("notify::title", this._updateTitle);
 	            	box.tooltip = box.window.get_title();
 	            	box.app = this.tracker.get_window_app(box.window);
 		            box.connect('button-press-event', Lang.bind(this, function() {
@@ -109,6 +112,7 @@ const WindowList = new Lang.Class({
 	            let box = new St.Bin({visible: true, 
         						reactive: true, can_focus: true, track_hover: true});
 	            box.window = this.windows[i];
+	            box.window.connect("notify::title", this._updateTitle);
 	            box.tooltip = box.window.get_title();
 	            box.app = this.tracker.get_window_app(box.window);
                 box.connect('button-press-event', Lang.bind(this, function() {
@@ -127,18 +131,19 @@ const WindowList = new Lang.Class({
                 this.apps_menu.add_actor(box);
             };
         };
-        if (global.display.get_focus_window()) {
+    },
+    
+    _updateTitle: function() {
+    	if (global.display.get_focus_window()) {
     			AppMenu._label.set_text(global.display.get_focus_window().get_title());
-    	};
+    		};
     },
     
     _onHover: function(b, tt) {
     	if (b.hover) {
     		AppMenu._label.set_text(tt);
     	} else {
-    		if (global.display.get_focus_window()) {
-    			AppMenu._label.set_text(global.display.get_focus_window().get_title());
-    		};
+    		this._updateTitle();
     	};
     },
     
