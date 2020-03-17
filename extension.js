@@ -65,10 +65,10 @@ const WindowList = new Lang.Class({
         						reactive: true, can_focus: true, track_hover: true});
 	            	box.window = this.sticky_windows[i];
 	            	box.tooltip = box.window.get_title();
-	            	this.app = this.tracker.get_window_app(box.window);
+	            	box.app = this.tracker.get_window_app(box.window);
 		            box.connect('button-press-event', Lang.bind(this, function() {
 		            							this._activateWindow(metaWorkspace, metaWindow); } ));
-		            box.icon = this.app.create_icon_texture(ICON_SIZE);
+		            box.icon = box.app.create_icon_texture(ICON_SIZE);
 		            if (metaWindow.is_hidden()) {
 		            	box.icon.set_opacity(HIDDEN_OPACITY); box.style_class = 'hidden-app';
 		            }
@@ -110,10 +110,10 @@ const WindowList = new Lang.Class({
         						reactive: true, can_focus: true, track_hover: true});
 	            box.window = this.windows[i];
 	            box.tooltip = box.window.get_title();
-	            this.app = this.tracker.get_window_app(box.window);
+	            box.app = this.tracker.get_window_app(box.window);
                 box.connect('button-press-event', Lang.bind(this, function() {
                 							this._activateWindow(metaWorkspace, metaWindow); } ));
-                box.icon = this.app.create_icon_texture(ICON_SIZE);
+                box.icon = box.app.create_icon_texture(ICON_SIZE);
                 if (metaWindow.is_hidden()) {
                 	box.icon.set_opacity(HIDDEN_OPACITY); box.style_class = 'hidden-app';
                 }
@@ -125,8 +125,11 @@ const WindowList = new Lang.Class({
                	box.connect('notify::hover', Lang.bind(this, function() {
                 							this._onHover(box, box.tooltip); } ));
                 this.apps_menu.add_actor(box);
-            }
-        }
+            };
+        };
+        if (global.display.get_focus_window()) {
+    			AppMenu._label.set_text(global.display.get_focus_window().get_title());
+    	};
     },
     
     _onHover: function(b, tt) {
@@ -135,8 +138,8 @@ const WindowList = new Lang.Class({
     	} else {
     		if (global.display.get_focus_window()) {
     			AppMenu._label.set_text(global.display.get_focus_window().get_title());
-    		}
-    	}
+    		};
+    	};
     },
     
     _activateWorkspace: function(ws) {
