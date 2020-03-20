@@ -12,6 +12,11 @@ const Meta = imports.gi.Meta;
 const Shell = imports.gi.Shell;
 const Clutter = imports.gi.Clutter;
 const AppMenu = Main.panel.statusArea.appMenu;
+const PopupMenu = imports.ui.popupMenu;
+
+const Gettext = imports.gettext.domain('gnome-shell-extensions');
+const _ = Gettext.gettext;
+const N_ = x => x;
 
 var ICON_SIZE = 22;
 var HIDDEN_OPACITY = 127;
@@ -188,6 +193,16 @@ function enable() {
 	if (activities_indicator) {
     	activities_indicator.hide();
 	};
+	
+	let places_menu_indicator = Main.panel.statusArea['places-menu'];
+	if (places_menu_indicator) {
+    	places_menu_indicator.remove_child(places_menu_indicator.get_first_child());
+    	let places_menu_box = new St.BoxLayout({style_class: 'panel-status-menu-box'});
+       	let places_menu_icon = new St.Icon({ icon_name: 'folder-symbolic', style_class: 'system-status-icon' });
+       	places_menu_box.add_child(places_menu_icon);
+       	places_menu_box.add_child(PopupMenu.arrowIcon(St.Side.BOTTOM));
+       	places_menu_indicator.add_actor(places_menu_box);
+	};
     	
 	windowlist = new WindowList;
     let position = 1;
@@ -200,6 +215,20 @@ function enable() {
 function disable() {
 	windowlist._destroy();
 	AppMenu._iconBox.show();
+	
+	let places_menu_indicator = Main.panel.statusArea['places-menu'];
+	if (places_menu_indicator) {
+    	places_menu_indicator.remove_child(places_menu_indicator.get_first_child());
+    	let places_menu_box = new St.BoxLayout({style_class: 'panel-status-menu-box'});
+       	let places_menu_label = new St.Label({
+            text: _('Places'),
+            y_expand: true,
+            y_align: Clutter.ActorAlign.CENTER,
+        });
+       	places_menu_box.add_child(places_menu_label);
+       	places_menu_box.add_child(PopupMenu.arrowIcon(St.Side.BOTTOM));
+       	places_menu_indicator.add_actor(places_menu_box);
+	};
 	
 	let activities_indicator = Main.panel.statusArea['activities'];
 	if (activities_indicator) {
