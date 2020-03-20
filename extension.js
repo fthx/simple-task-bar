@@ -20,7 +20,7 @@ var HIDDEN_OPACITY = 127;
 const WindowList = new Lang.Class({
 	Name: 'WindowList.WindowList',
 
-	_init: function(){
+	_init: function(){	
 		AppMenu._iconBox.hide();
 	
 		this.apps_menu = new St.BoxLayout({});
@@ -184,6 +184,11 @@ function init() {
 }
 
 function enable() {
+	let activities_indicator = Main.panel.statusArea['activities'];
+	if (activities_indicator) {
+    	activities_indicator.hide();
+	};
+    	
 	windowlist = new WindowList;
     let position = 1;
     if ('places-menu' in Main.panel.statusArea)
@@ -195,4 +200,9 @@ function enable() {
 function disable() {
 	windowlist._destroy();
 	AppMenu._iconBox.show();
+	
+	let activities_indicator = Main.panel.statusArea['activities'];
+	if (activities_indicator) {
+    	activities_indicator.show();
+    };
 }
