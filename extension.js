@@ -1,7 +1,7 @@
-/* Simple Task Bar
-   Copyright fthx 2020
-   License: GPL v3
-   Contains some code from All Windows extension by lyonel
+/* 
+	Simple Task Bar
+	Copyright fthx 2020
+	License: GPL v3
 */
 
 const Lang = imports.lang;
@@ -191,7 +191,7 @@ function init() {
 function enable() {
 	let activities_indicator = Main.panel.statusArea['activities'];
 	if (activities_indicator) {
-    	activities_indicator.hide();
+    	activities_indicator.container.hide();
 	};
 	
 	let places_menu_indicator = Main.panel.statusArea['places-menu'];
@@ -232,6 +232,6 @@ function disable() {
 	
 	let activities_indicator = Main.panel.statusArea['activities'];
 	if (activities_indicator) {
-    	activities_indicator.show();
+    	activities_indicator.container.show();
     };
 }
