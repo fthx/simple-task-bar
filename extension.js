@@ -36,6 +36,7 @@ const WindowList = new Lang.Class({
 		this._workspace_removed = global.workspace_manager.connect('workspace-removed', Lang.bind(this, this._updateMenu));
 		this._workspace_changed = global.workspace_manager.connect('active-workspace-changed', Lang.bind(this, this._updateMenu));
 		this._workspace_added = global.workspace_manager.connect('workspace-added', Lang.bind(this, this._updateMenu));
+		this._workspace_number_changed = global.workspace_manager.connect('notify::n-workspaces', Lang.bind(this, this._updateMenu));
 	},
 
 	_destroy: function() {
@@ -44,6 +45,7 @@ const WindowList = new Lang.Class({
 		global.workspace_manager.disconnect(this._workspace_removed);
 		global.workspace_manager.disconnect(this._workspace_changed);
 		global.workspace_manager.disconnect(this._workspace_added);
+		global.workspace_manager.disconnect(this._workspace_number_changed);
 		this.apps_menu.destroy();
     },
 
@@ -153,13 +155,13 @@ const WindowList = new Lang.Class({
     },
     
     _activateWorkspace: function(ws) {
-    	if (global.workspace_manager.get_active_workspace() === ws) {
-    		Main.overview.toggle();
-    	}
-    	else {
-    		Main.overview.show();
-    	};
-    	ws.activate(global.get_current_time()); 
+		if (global.workspace_manager.get_active_workspace() === ws) {
+			Main.overview.toggle();
+		}
+		else {
+			Main.overview.show();
+		};
+		ws.activate(global.get_current_time());
     },
 
     _activateWindow: function(ws, w) {
@@ -191,7 +193,7 @@ function init() {
 function enable() {
 	let activities_indicator = Main.panel.statusArea['activities'];
 	if (activities_indicator) {
-    	activities_indicator.container.hide();
+    	activities_indicator.hide();
 	};
 	
 	let places_menu_indicator = Main.panel.statusArea['places-menu'];
@@ -232,6 +234,6 @@ function disable() {
 	
 	let activities_indicator = Main.panel.statusArea['activities'];
 	if (activities_indicator) {
-    	activities_indicator.container.show();
+    	activities_indicator.show();
     };
 }
