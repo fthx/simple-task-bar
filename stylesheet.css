@@ -35,7 +35,7 @@
 }
 
 .desk-label-active {
-  margin-left: 12px;
+  margin-left: 8px;
   margin-right: 12px;
   /*background-color: rgba(233, 84, 32, 1);*/
   color: rgba(255, 255, 255, 0.8);
@@ -44,7 +44,7 @@
 }
 
 .desk-label-inactive {
-  margin-left: 12px;
+  margin-left: 8px;
   margin-right: 12px;
   /*background-color: rgba(233, 84, 32, 0.3);*/
   color: rgba(255, 255, 255, 0.4);

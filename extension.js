@@ -68,7 +68,7 @@ const WindowList = new Lang.Class({
         for ( let workspace_index = 0; workspace_index < this.workspaces_count; ++workspace_index ) {
         
             let metaWorkspace = global.workspace_manager.get_workspace_by_index(workspace_index);
-            this.windows = metaWorkspace.list_windows();
+            this.windows = metaWorkspace.list_windows().sort(this._sortWindows);
             
             // create all sticky windows (means on all workspaces) icons and buttons
             if (workspace_index==0) {
@@ -149,6 +149,11 @@ const WindowList = new Lang.Class({
                 this.apps_menu.add_actor(box);
             };
         };
+    },
+    
+    // windows list sort function by reverse window id
+    _sortWindows: function(w1, w2) {
+    	return w1.get_id() - w2.get_id();
     },
     
     // displays the focused window title
@@ -237,7 +242,7 @@ function disable() {
 	// restore default AppMenu label
 	AppMenu._iconBox.show();
 	
-	//display Places label instead of icon
+	// display Places label instead of icon
 	let places_menu_indicator = Main.panel.statusArea['places-menu'];
 	if (places_menu_indicator) {
     	places_menu_indicator.remove_child(places_menu_indicator.get_first_child());
