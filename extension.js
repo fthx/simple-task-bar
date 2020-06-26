@@ -20,7 +20,7 @@ const _ = Gettext.gettext;
 const N_ = x => x;
 
 // icon size for apps in task bar
-var ICON_SIZE = 22;
+var ICON_SIZE = 20;
 // opacity of inactive or hidden windows (0=min, 255=max)
 var HIDDEN_OPACITY = 127;
 
