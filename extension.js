@@ -151,7 +151,7 @@ const WindowList = new Lang.Class({
         };
     },
     
-    // windows list sort function by reverse window id
+    // windows list sort function by window id
     _sortWindows: function(w1, w2) {
     	return w1.get_id() - w2.get_id();
     },

@@ -37,17 +37,17 @@
 .desk-label-active {
   margin-left: 8px;
   margin-right: 12px;
-  /*background-color: rgba(233, 84, 32, 1);*/
+  background-color: rgba(127, 127, 127, 0.8);
   color: rgba(255, 255, 255, 0.8);
-  border: 2px solid rgba(255, 255, 255, 0.8);
+  border: 1px solid rgba(0, 0, 0, 0.8);
   border-radius: 4px;
 }
 
 .desk-label-inactive {
   margin-left: 8px;
   margin-right: 12px;
-  /*background-color: rgba(233, 84, 32, 0.3);*/
+  background-color: rgba(127, 127, 127, 0.4);
   color: rgba(255, 255, 255, 0.4);
-  border: 2px solid rgba(255, 255, 255, 0.4);
+  border: 1px solid rgba(0, 0, 0, 0.4);
   border-radius: 4px;
 }
