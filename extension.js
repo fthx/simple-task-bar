@@ -159,13 +159,16 @@ const WindowList = new Lang.Class({
     // displays the focused window title
     _updateTitle: function() {
     	if (global.display.get_focus_window()) {
-    			AppMenu._label.set_text(global.display.get_focus_window().get_title());
-    		};
+    			this.window_label = global.display.get_focus_window().get_title();
+    			if (this.window_label) {
+    				AppMenu._label.set_text(this.window_label);
+    			}
+    	};
     },
     
     // hover on app icon button b shows its window title tt
     _onHover: function(b, tt) {
-    	if (b.hover) {
+    	if (tt && b.hover) {
     		AppMenu._label.set_text(tt);
     	} else {
     		this._updateTitle();
