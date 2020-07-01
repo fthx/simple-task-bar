@@ -4,6 +4,30 @@
 	License GPL v3
 */
 
+
+// ********************  USER SETTINGS  *********************************************
+
+// icon size for apps in task bar (px, default = 20)
+var ICON_SIZE = 20;
+
+// opacity of inactive or hidden windows (min = 0, max = 255, default = 127)
+var HIDDEN_OPACITY = 127;
+
+// display workspaces labels (true or false, default = true)
+var DISPLAY_WORKSPACES = true
+
+// display last void workspace label (true or false, default = true)
+var DISPLAY_LAST_WORKSPACE = true
+
+// display custom workspaces labels (true or false, default = false)
+var DISPLAY_CUSTOM_WORKSPACES = false
+
+// custom workspaces labels (list, as long as needed, no bug if list is too short)
+var CUSTOM_WORKSPACES_LABELS = ["A", "BB", "CCC", "DDDD"]
+
+// **********************************************************************************
+
+
 const Lang = imports.lang;
 const St = imports.gi.St;
 const Main = imports.ui.main;
@@ -18,11 +42,6 @@ const PopupMenu = imports.ui.popupMenu;
 const Gettext = imports.gettext.domain('gnome-shell-extensions');
 const _ = Gettext.gettext;
 const N_ = x => x;
-
-// icon size for apps in task bar
-var ICON_SIZE = 20;
-// opacity of inactive or hidden windows (0=min, 255=max)
-var HIDDEN_OPACITY = 127;
 
 
 const WindowList = new Lang.Class({
@@ -65,7 +84,12 @@ const WindowList = new Lang.Class({
         this.workspaces_count = global.workspace_manager.get_n_workspaces();
 		
 		// do this for all existing workspaces
-        for ( let workspace_index = 0; workspace_index < this.workspaces_count; ++workspace_index ) {
+		if (DISPLAY_LAST_WORKSPACE) {
+			this.last_workspace = this.workspaces_count
+		} else {
+			this.last_workspace = this.workspaces_count - 1
+		};
+        for ( let workspace_index = 0; workspace_index < this.last_workspace; ++workspace_index ) {
         
             let metaWorkspace = global.workspace_manager.get_workspace_by_index(workspace_index);
             this.windows = metaWorkspace.list_windows().sort(this._sortWindows);
@@ -103,26 +127,32 @@ const WindowList = new Lang.Class({
             };
             
             // create all workspaces labels and buttons
-        	this.ws_box = new St.Bin({visible: true, 
-    						reactive: true, can_focus: true, track_hover: true});
-    		this.ws_box.label = new St.Label({y_align: Clutter.ActorAlign.CENTER});
-        	if (global.workspace_manager.get_active_workspace() === metaWorkspace) {
-    			this.ws_box.label.style_class = 'desk-label-active';
-    		}
-    		else {
-    			this.ws_box.label.style_class = 'desk-label-inactive';
-    		};
-    		this.ws_box.label.set_text((" "+(workspace_index+1)+" ").toString());
-    		this.ws_box.set_child(this.ws_box.label);
-    		this.ws_box.connect('button-press-event', Lang.bind(this, function() {
-            							this._activateWorkspace(metaWorkspace); } ));
-            this.apps_menu.add_actor(this.ws_box);
-        	
-        	this.windows = this.windows.filter(
-            	function(w) {
-                	return !w.is_skip_taskbar() && !w.is_on_all_workspaces();
-               	}
-            );
+            if (DISPLAY_WORKSPACES) {
+		    	this.ws_box = new St.Bin({visible: true, 
+								reactive: true, can_focus: true, track_hover: true});
+				this.ws_box.label = new St.Label({y_align: Clutter.ActorAlign.CENTER});
+		    	if (global.workspace_manager.get_active_workspace() === metaWorkspace) {
+					this.ws_box.label.style_class = 'desk-label-active';
+				}
+				else {
+					this.ws_box.label.style_class = 'desk-label-inactive';
+				};
+				if (DISPLAY_CUSTOM_WORKSPACES && workspace_index < CUSTOM_WORKSPACES_LABELS.length) {
+					this.ws_box.label.set_text((" "+CUSTOM_WORKSPACES_LABELS[workspace_index]+" ").toString());
+				} else {
+					this.ws_box.label.set_text((" "+(workspace_index+1)+" ").toString());
+				};
+				this.ws_box.set_child(this.ws_box.label);
+				this.ws_box.connect('button-press-event', Lang.bind(this, function() {
+		        							this._activateWorkspace(metaWorkspace); } ));
+		        this.apps_menu.add_actor(this.ws_box);
+		    	
+		    	this.windows = this.windows.filter(
+		        	function(w) {
+		            	return !w.is_skip_taskbar() && !w.is_on_all_workspaces();
+		           	}
+		        );
+		    };
 			
 			// create all normal windows icons and buttons
             for ( let i = 0; i < this.windows.length; ++i ) {
