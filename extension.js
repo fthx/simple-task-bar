@@ -25,6 +25,12 @@ var DISPLAY_CUSTOM_WORKSPACES = false
 // custom workspaces labels (list, as long as needed, no bug if list is too short)
 var CUSTOM_WORKSPACES_LABELS = ["A", "BB", "CCC", "DDDD"]
 
+// remove Activities button (true or false, default = true)
+var REMOVE_ACTIVITIES = true
+
+// change Places Menu label to an icon (true or false, default = true)
+var PLACES_MENU_ICON = true
+
 // **********************************************************************************
 
 
@@ -243,20 +249,24 @@ function enable() {
 	AppMenu._iconBox.hide();
 	
 	// hide Activities label
-	let activities_indicator = Main.panel.statusArea['activities'];
-	if (activities_indicator) {
-    	activities_indicator.container.hide();
+	if (REMOVE_ACTIVITIES) {
+		let activities_indicator = Main.panel.statusArea['activities'];
+		if (activities_indicator) {
+			activities_indicator.container.hide();
+		};
 	};
 	
 	// change Places label to folder icon
-	let places_menu_indicator = Main.panel.statusArea['places-menu'];
-	if (places_menu_indicator) {
-    	places_menu_indicator.remove_child(places_menu_indicator.get_first_child());
-    	let places_menu_box = new St.BoxLayout({style_class: 'panel-status-menu-box'});
-       	let places_menu_icon = new St.Icon({ icon_name: 'folder-symbolic', style_class: 'system-status-icon' });
-       	places_menu_box.add_child(places_menu_icon);
-       	places_menu_box.add_child(PopupMenu.arrowIcon(St.Side.BOTTOM));
-       	places_menu_indicator.add_actor(places_menu_box);
+	if (PLACES_MENU_ICON) {
+		let places_menu_indicator = Main.panel.statusArea['places-menu'];
+		if (places_menu_indicator) {
+			places_menu_indicator.remove_child(places_menu_indicator.get_first_child());
+			let places_menu_box = new St.BoxLayout({style_class: 'panel-status-menu-box'});
+		   	let places_menu_icon = new St.Icon({ icon_name: 'folder-symbolic', style_class: 'system-status-icon' });
+		   	places_menu_box.add_child(places_menu_icon);
+		   	places_menu_box.add_child(PopupMenu.arrowIcon(St.Side.BOTTOM));
+		   	places_menu_indicator.add_actor(places_menu_box);
+		};
 	};
     	
     // activate and display task bar in the panel
@@ -276,23 +286,27 @@ function disable() {
 	AppMenu._iconBox.show();
 	
 	// display Places label instead of icon
-	let places_menu_indicator = Main.panel.statusArea['places-menu'];
-	if (places_menu_indicator) {
-    	places_menu_indicator.remove_child(places_menu_indicator.get_first_child());
-    	let places_menu_box = new St.BoxLayout({style_class: 'panel-status-menu-box'});
-       	let places_menu_label = new St.Label({
-            text: _('Places'),
-            y_expand: true,
-            y_align: Clutter.ActorAlign.CENTER,
-        });
-       	places_menu_box.add_child(places_menu_label);
-       	places_menu_box.add_child(PopupMenu.arrowIcon(St.Side.BOTTOM));
-       	places_menu_indicator.add_actor(places_menu_box);
+	if (PLACES_MENU_ICON) {
+		let places_menu_indicator = Main.panel.statusArea['places-menu'];
+		if (places_menu_indicator) {
+			places_menu_indicator.remove_child(places_menu_indicator.get_first_child());
+			let places_menu_box = new St.BoxLayout({style_class: 'panel-status-menu-box'});
+		   	let places_menu_label = new St.Label({
+		        text: _('Places'),
+		        y_expand: true,
+		        y_align: Clutter.ActorAlign.CENTER,
+		    });
+		   	places_menu_box.add_child(places_menu_label);
+		   	places_menu_box.add_child(PopupMenu.arrowIcon(St.Side.BOTTOM));
+		   	places_menu_indicator.add_actor(places_menu_box);
+		};
 	};
 	
 	// display Activities label ; take care of locked session to not display Activities label on it
-	let activities_indicator = Main.panel.statusArea['activities'];
-	if (activities_indicator && !Main.sessionMode.isLocked) {
-    	activities_indicator.container.show();
-    };
+	if (REMOVE_ACTIVITIES) {
+		let activities_indicator = Main.panel.statusArea['activities'];
+		if (activities_indicator && !Main.sessionMode.isLocked) {
+			activities_indicator.container.show();
+		};
+	}
 }
