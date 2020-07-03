@@ -22,8 +22,14 @@ var DISPLAY_LAST_WORKSPACE = true
 // display custom workspaces labels (true or false, default = false)
 var DISPLAY_CUSTOM_WORKSPACES = false
 
-// custom workspaces labels (list, as long as needed, no bug if list is too short)
+// display workspace label for sticky display (2nd monitor, ...) label (true or false, default = true)
+var DISPLAY_STICKY_WORKSPACE = true
+
+// custom workspaces labels (string list, as long as needed, no bug if list is too short)
 var CUSTOM_WORKSPACES_LABELS = ["A", "BB", "CCC", "DDDD"]
+
+// sticky workspace label (string, default = "0")
+var STICKY_WORKSPACE_LABEL = "0"
 
 // remove Activities button (true or false, default = true)
 var REMOVE_ACTIVITIES = true
@@ -95,18 +101,31 @@ const WindowList = new Lang.Class({
 		} else {
 			this.last_workspace = this.workspaces_count - 1
 		};
-        for ( let workspace_index = 0; workspace_index < this.last_workspace; ++workspace_index ) {
+        for (let workspace_index = 0; workspace_index < this.last_workspace; ++workspace_index) {
         
             let metaWorkspace = global.workspace_manager.get_workspace_by_index(workspace_index);
             this.windows = metaWorkspace.list_windows().sort(this._sortWindows);
             
-            // create all sticky windows (means on all workspaces) icons and buttons
-            if (workspace_index==0) {
+            // create sticky workspace icon + all sticky windows (on all workspaces) icons and buttons
+            if (workspace_index == 0) {
             	this.sticky_windows = this.windows.filter(
             		function(w) {
                 		return !w.is_skip_taskbar() && w.is_on_all_workspaces();
             		}
             	);
+            	
+            	if (DISPLAY_STICKY_WORKSPACE) {
+				    if (this.sticky_windows.length > 0) {
+						this.allws_box = new St.Bin({visible: true, 
+											reactive: true, can_focus: true, track_hover: true});						
+						this.allws_box.label = new St.Label({y_align: Clutter.ActorAlign.CENTER});
+						this.allws_box.label.style_class = 'desk-label-active';
+						this.allws_box.label.set_text((" " + STICKY_WORKSPACE_LABEL + " ").toString());
+						this.allws_box.set_child(this.allws_box.label);
+						this.apps_menu.add_actor(this.allws_box);
+				    };
+				};			
+				
             	for ( let i = 0; i < this.sticky_windows.length; ++i ) {
 	            	let metaWindow = this.sticky_windows[i];
 	            	let box = new St.Bin({visible: true, 
@@ -146,7 +165,7 @@ const WindowList = new Lang.Class({
 				if (DISPLAY_CUSTOM_WORKSPACES && workspace_index < CUSTOM_WORKSPACES_LABELS.length) {
 					this.ws_box.label.set_text((" "+CUSTOM_WORKSPACES_LABELS[workspace_index]+" ").toString());
 				} else {
-					this.ws_box.label.set_text((" "+(workspace_index+1)+" ").toString());
+					this.ws_box.label.set_text((" " + (workspace_index+1) + " ").toString());
 				};
 				this.ws_box.set_child(this.ws_box.label);
 				this.ws_box.connect('button-press-event', Lang.bind(this, function() {
