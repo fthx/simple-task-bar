@@ -37,6 +37,9 @@ var REMOVE_ACTIVITIES = true
 // change Places Menu label to an icon (true or false, default = true)
 var PLACES_MENU_ICON = true
 
+// if true, show the complete title of the focused window else only show the app name (true or false, default = true)
+var SHOW_WINDOW_TITLE = true;
+
 // **********************************************************************************
 
 
@@ -214,10 +217,17 @@ const WindowList = new Lang.Class({
     // displays the focused window title
     _updateTitle: function() {
     	if (global.display.get_focus_window()) {
-    			this.window_label = global.display.get_focus_window().get_title();
-    			if (this.window_label) {
-    				AppMenu._label.set_text(this.window_label);
-    			}
+			if (SHOW_WINDOW_TITLE) {
+				this.window_label = global.display.get_focus_window().get_title();
+			} else {
+				// only show app name
+				if (this.tracker && this.tracker.get_window_app(global.display.get_focus_window())) {
+					this.window_label = this.tracker.get_window_app(global.display.get_focus_window()).get_name();
+				}
+			}
+			if (this.window_label) {
+				AppMenu._label.set_text(this.window_label);
+			}
     	};
     },
     
