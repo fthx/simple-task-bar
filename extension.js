@@ -1,6 +1,7 @@
 /* 
 	Simple Task Bar
-	Copyright fthx 2020
+	Copyright Francois Thirioux 2020
+	GitHub contributors: @fthx (original extension), @leleat (more settings, settings UI)
 	License GPL v3
 */
 
@@ -93,6 +94,7 @@ const WindowList = new Lang.Class({
 		this.apps_menu.destroy();
 	},
 	
+	// hide Activities button
 	_set_Activities_visibility: function(extension_disabled) {
 		if ( (extension_disabled == true && this.settings.get_boolean("remove-activities")) || !this.settings.get_boolean("remove-activities") ) {
 			let activities_indicator = Main.panel.statusArea['activities'];
@@ -186,6 +188,8 @@ const WindowList = new Lang.Class({
 		            box.connect('button-press-event', Lang.bind(this, function() {
 		            							this._activateWindow(metaWorkspace, metaWindow); } ));
 		            box.icon = box.app.create_icon_texture(this.settings.get_int("icon-size"));
+		            let iconEffect = new Clutter.DesaturateEffect();
+                	box.icon.add_effect(iconEffect);
 		            if (metaWindow.is_hidden()) {
 						box.icon.set_opacity(this.settings.get_int("hidden-opacity")); box.style_class = 'hidden-app';
 		            }
@@ -241,6 +245,8 @@ const WindowList = new Lang.Class({
                 box.connect('button-press-event', Lang.bind(this, function() {
                 							this._activateWindow(metaWorkspace, metaWindow); } ));
                 box.icon = box.app.create_icon_texture(this.settings.get_int("icon-size"));
+                let iconEffect = new Clutter.DesaturateEffect();
+                box.icon.add_effect(iconEffect);
                 if (metaWindow.is_hidden()) {
 					box.icon.set_opacity(this.settings.get_int("hidden-opacity")); box.style_class = 'hidden-app';
                 }
