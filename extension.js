@@ -4,42 +4,6 @@
 	License GPL v3
 */
 
-
-// ********************  USER SETTINGS  *********************************************
-
-// icon size for apps in task bar (px, default = 20)
-var ICON_SIZE = 20;
-
-// opacity of inactive or hidden windows (min = 0, max = 255, default = 127)
-var HIDDEN_OPACITY = 127;
-
-// display workspaces labels (true or false, default = true)
-var DISPLAY_WORKSPACES = true
-
-// display last void workspace label (true or false, default = true)
-var DISPLAY_LAST_WORKSPACE = true
-
-// display custom workspaces labels (true or false, default = false)
-var DISPLAY_CUSTOM_WORKSPACES = false
-
-// display workspace label for sticky display (2nd monitor, ...) label (true or false, default = true)
-var DISPLAY_STICKY_WORKSPACE = true
-
-// custom workspaces labels (string list, as long as needed, no bug if list is too short)
-var CUSTOM_WORKSPACES_LABELS = ["A", "BB", "CCC", "DDDD"]
-
-// sticky workspace label (string, default = "0")
-var STICKY_WORKSPACE_LABEL = "0"
-
-// remove Activities button (true or false, default = true)
-var REMOVE_ACTIVITIES = true
-
-// change Places Menu label to an icon (true or false, default = true)
-var PLACES_MENU_ICON = true
-
-// **********************************************************************************
-
-
 const Lang = imports.lang;
 const St = imports.gi.St;
 const Main = imports.ui.main;
@@ -49,6 +13,9 @@ const Shell = imports.gi.Shell;
 const Clutter = imports.gi.Clutter;
 const AppMenu = Main.panel.statusArea.appMenu;
 const PopupMenu = imports.ui.popupMenu;
+const GLib = imports.gi.GLib;
+const Gio = imports.gi.Gio;
+const Me = imports.misc.extensionUtils.getCurrentExtension();
 
 // translation needed to restore Places Menu label when disable extension
 const Gettext = imports.gettext.domain('gnome-shell-extensions');
@@ -61,6 +28,38 @@ const WindowList = new Lang.Class({
 	
 	// create the task bar container and signals
 	_init: function(){
+		// get settings
+		let gschema = Gio.SettingsSchemaSource.new_from_directory(
+			Me.dir.get_child('schemas').get_path(),
+			Gio.SettingsSchemaSource.get_default(),
+			false
+		);
+		this.settings_schema = gschema.lookup('org.gnome.shell.extensions.simple-task-bar', true);
+		this.settings = new Gio.Settings({
+			settings_schema: this.settings_schema
+		});
+
+		// signals for settings change
+		let keys = this.settings_schema.list_keys();
+		this.signals_array = [];
+		for (let i in keys) {
+			let key = keys[i];
+			if (key == "remove-activities") {
+				this.signals_array[i] = this.settings.connect( "changed::" + key, this._set_Activities_visibility.bind(this) );
+			} else if (key == "places-menu-icon") {
+				this.signals_array[i] = this.settings.connect( "changed::" + key, this._set_Places_to_icon.bind(this) );
+			} else {
+				this.signals_array[i] = this.settings.connect( "changed::" + key, this._updateMenu.bind(this) );
+			}
+		}
+
+		if (this.settings.get_boolean("remove-activities")) {
+			this._set_Activities_visibility();
+		};
+
+		if (this.settings.get_boolean("places-menu-icon")) {
+			this._set_Places_to_icon();
+		};
 	
 		this.apps_menu = new St.BoxLayout({});
 		this.actor = this.apps_menu;
@@ -70,25 +69,75 @@ const WindowList = new Lang.Class({
 		this._workspace_changed = global.workspace_manager.connect('active-workspace-changed', Lang.bind(this, this._updateMenu));
 		this._workspace_number_changed = global.workspace_manager.connect('notify::n-workspaces', Lang.bind(this, this._updateMenu));
 	},
-	
+
 	// destroy the task bar
 	_destroy: function() {
+		if (this.settings.get_boolean("remove-activities")) {
+			this._set_Activities_visibility(true);
+		};
+
+		if (this.settings.get_boolean("places-menu-icon")) {
+			this._set_Places_to_icon(true);
+		};
+
 		// disconnect all signals
 		global.display.disconnect(this._restacked);
 		global.display.disconnect(this._window_change_monitor);
 		global.workspace_manager.disconnect(this._workspace_changed);
 		global.workspace_manager.disconnect(this._workspace_number_changed);
+
+		// disconnect signals for settings change
+		this.signals_array.forEach(signalID => this.settings.disconnect(signalID));
 		
 		// destroy task bar container
 		this.apps_menu.destroy();
-    },
+	},
 	
+	_set_Activities_visibility: function(extension_disabled) {
+		if ( (extension_disabled == true && this.settings.get_boolean("remove-activities")) || !this.settings.get_boolean("remove-activities") ) {
+			let activities_indicator = Main.panel.statusArea['activities'];
+			if (activities_indicator && !Main.sessionMode.isLocked) {
+				activities_indicator.container.show();
+			}
+		} else {
+			let activities_indicator = Main.panel.statusArea['activities'];
+			if (activities_indicator) {
+				activities_indicator.container.hide();
+			}
+		}
+	},
+
+	// change Places label to folder icon or restore label
+	_set_Places_to_icon: function(extension_disabled) {
+		let places_menu_indicator = Main.panel.statusArea['places-menu'];
+		if (places_menu_indicator) {
+			places_menu_indicator.remove_child(places_menu_indicator.get_first_child());
+			let places_menu_box = new St.BoxLayout({style_class: 'panel-status-menu-box'});
+
+			if ( (extension_disabled == true && this.settings.get_boolean("places-menu-icon")) || !this.settings.get_boolean("places-menu-icon") ) {
+				let places_menu_label = new St.Label({
+					text: _('Places'),
+					y_expand: true,
+					y_align: Clutter.ActorAlign.CENTER,
+				});
+				places_menu_box.add_child(places_menu_label);
+				places_menu_box.add_child(PopupMenu.arrowIcon(St.Side.BOTTOM));
+				places_menu_indicator.add_actor(places_menu_box);
+			} else {
+				let places_menu_icon = new St.Icon({ icon_name: 'folder-symbolic', style_class: 'system-status-icon' });
+				places_menu_box.add_child(places_menu_icon);
+				places_menu_box.add_child(PopupMenu.arrowIcon(St.Side.BOTTOM));
+				places_menu_indicator.add_actor(places_menu_box);
+			}
+		}
+	},
+
 	// update the task bar
     _updateMenu: function() {   
     	// destroy old task bar 	
     	this.apps_menu.destroy_all_children();
     	
-    	// update the focused window title
+		// update the focused window title
     	this._updateTitle();
     	
     	// track windows and get the number of workspaces
@@ -96,7 +145,7 @@ const WindowList = new Lang.Class({
         this.workspaces_count = global.workspace_manager.get_n_workspaces();
 		
 		// do this for all existing workspaces
-		if (DISPLAY_LAST_WORKSPACE) {
+		if (this.settings.get_boolean("display-last-workspace")) {
 			this.last_workspace = this.workspaces_count
 		} else {
 			this.last_workspace = this.workspaces_count - 1
@@ -114,13 +163,13 @@ const WindowList = new Lang.Class({
             		}
             	);
             	
-            	if (DISPLAY_STICKY_WORKSPACE) {
+				if (this.settings.get_boolean("display-sticky-workspace")) {
 				    if (this.sticky_windows.length > 0) {
 						this.allws_box = new St.Bin({visible: true, 
 											reactive: true, can_focus: true, track_hover: true});						
 						this.allws_box.label = new St.Label({y_align: Clutter.ActorAlign.CENTER});
 						this.allws_box.label.style_class = 'desk-label-active';
-						this.allws_box.label.set_text((" " + STICKY_WORKSPACE_LABEL + " ").toString());
+						this.allws_box.label.set_text((" " + this.settings.get_string("sticky-workspace-label") + " ").toString());
 						this.allws_box.set_child(this.allws_box.label);
 						this.apps_menu.add_actor(this.allws_box);
 				    };
@@ -131,14 +180,14 @@ const WindowList = new Lang.Class({
 	            	let box = new St.Bin({visible: true, 
         						reactive: true, can_focus: true, track_hover: true});
 	            	box.window = this.sticky_windows[i];
-	           		box.window.connect("notify::title", this._updateTitle);
+	           		box.window.connect("notify::title", this._updateTitle.bind(this));
 	            	box.tooltip = box.window.get_title();
 	            	box.app = this.tracker.get_window_app(box.window);
 		            box.connect('button-press-event', Lang.bind(this, function() {
 		            							this._activateWindow(metaWorkspace, metaWindow); } ));
-		            box.icon = box.app.create_icon_texture(ICON_SIZE);
+		            box.icon = box.app.create_icon_texture(this.settings.get_int("icon-size"));
 		            if (metaWindow.is_hidden()) {
-		            	box.icon.set_opacity(HIDDEN_OPACITY); box.style_class = 'hidden-app';
+						box.icon.set_opacity(this.settings.get_int("hidden-opacity")); box.style_class = 'hidden-app';
 		            }
 		            else {
 		            	 if (metaWindow.has_focus()) {box.style_class = 'focused-app';}
@@ -152,7 +201,7 @@ const WindowList = new Lang.Class({
             };
             
             // create all workspaces labels and buttons
-            if (DISPLAY_WORKSPACES) {
+            if (this.settings.get_boolean("display-workspaces")) {
 		    	this.ws_box = new St.Bin({visible: true, 
 								reactive: true, can_focus: true, track_hover: true});
 				this.ws_box.label = new St.Label({y_align: Clutter.ActorAlign.CENTER});
@@ -162,8 +211,9 @@ const WindowList = new Lang.Class({
 				else {
 					this.ws_box.label.style_class = 'desk-label-inactive';
 				};
-				if (DISPLAY_CUSTOM_WORKSPACES && workspace_index < CUSTOM_WORKSPACES_LABELS.length) {
-					this.ws_box.label.set_text((" "+CUSTOM_WORKSPACES_LABELS[workspace_index]+" ").toString());
+				let custom_ws_labels = this.settings.get_string("custom-workspace-labels").split(",");
+				if (this.settings.get_boolean("display-custom-workspaces") && workspace_index < custom_ws_labels.length) {
+					this.ws_box.label.set_text((" " + custom_ws_labels[workspace_index].trim() + " ").toString());
 				} else {
 					this.ws_box.label.set_text((" " + (workspace_index+1) + " ").toString());
 				};
@@ -185,14 +235,14 @@ const WindowList = new Lang.Class({
 	            let box = new St.Bin({visible: true, 
         						reactive: true, can_focus: true, track_hover: true});
 	            box.window = this.windows[i];
-	            box.window.connect("notify::title", this._updateTitle);
+	            box.window.connect("notify::title", this._updateTitle.bind(this));
 	            box.tooltip = box.window.get_title();
 	            box.app = this.tracker.get_window_app(box.window);
                 box.connect('button-press-event', Lang.bind(this, function() {
                 							this._activateWindow(metaWorkspace, metaWindow); } ));
-                box.icon = box.app.create_icon_texture(ICON_SIZE);
+                box.icon = box.app.create_icon_texture(this.settings.get_int("icon-size"));
                 if (metaWindow.is_hidden()) {
-                	box.icon.set_opacity(HIDDEN_OPACITY); box.style_class = 'hidden-app';
+					box.icon.set_opacity(this.settings.get_int("hidden-opacity")); box.style_class = 'hidden-app';
                 }
                 else {
                 	 if (metaWindow.has_focus()) {box.style_class = 'focused-app';}
@@ -205,21 +255,21 @@ const WindowList = new Lang.Class({
             };
         };
     },
-    
-    // windows list sort function by window id
+
+	// windows list sort function by window id
     _sortWindows: function(w1, w2) {
     	return w1.get_id() - w2.get_id();
     },
     
-    // displays the focused window title
-    _updateTitle: function() {
-    	if (global.display.get_focus_window()) {
-    			this.window_label = global.display.get_focus_window().get_title();
-    			if (this.window_label) {
-    				AppMenu._label.set_text(this.window_label);
-    			}
-    	};
-    },
+	// displays the focused window title
+	_updateTitle: function() {
+		if (global.display.get_focus_window()) {
+			this.window_label = global.display.get_focus_window().get_title();
+			if (this.window_label) {
+				AppMenu._label.set_text(this.window_label);
+			}
+		};
+	},
     
     // hover on app icon button b shows its window title tt
     _onHover: function(b, tt) {
@@ -264,30 +314,6 @@ function init() {
 }
 
 function enable() {
-	// hide icon before the AppMenu label
-	AppMenu._iconBox.hide();
-	
-	// hide Activities label
-	if (REMOVE_ACTIVITIES) {
-		let activities_indicator = Main.panel.statusArea['activities'];
-		if (activities_indicator) {
-			activities_indicator.container.hide();
-		};
-	};
-	
-	// change Places label to folder icon
-	if (PLACES_MENU_ICON) {
-		let places_menu_indicator = Main.panel.statusArea['places-menu'];
-		if (places_menu_indicator) {
-			places_menu_indicator.remove_child(places_menu_indicator.get_first_child());
-			let places_menu_box = new St.BoxLayout({style_class: 'panel-status-menu-box'});
-		   	let places_menu_icon = new St.Icon({ icon_name: 'folder-symbolic', style_class: 'system-status-icon' });
-		   	places_menu_box.add_child(places_menu_icon);
-		   	places_menu_box.add_child(PopupMenu.arrowIcon(St.Side.BOTTOM));
-		   	places_menu_indicator.add_actor(places_menu_box);
-		};
-	};
-    	
     // activate and display task bar in the panel
 	windowlist = new WindowList;
     let position = 1;
@@ -295,37 +321,15 @@ function enable() {
         position++;
     Main.panel._leftBox.insert_child_at_index(windowlist.actor, position);
 
+	// hide icon before the AppMenu label
+	AppMenu._iconBox.hide();
+
 }
 
 function disable() {
 	// destroy task bar
 	windowlist._destroy();
-	
+
 	// restore default AppMenu label
 	AppMenu._iconBox.show();
-	
-	// display Places label instead of icon
-	if (PLACES_MENU_ICON) {
-		let places_menu_indicator = Main.panel.statusArea['places-menu'];
-		if (places_menu_indicator) {
-			places_menu_indicator.remove_child(places_menu_indicator.get_first_child());
-			let places_menu_box = new St.BoxLayout({style_class: 'panel-status-menu-box'});
-		   	let places_menu_label = new St.Label({
-		        text: _('Places'),
-		        y_expand: true,
-		        y_align: Clutter.ActorAlign.CENTER,
-		    });
-		   	places_menu_box.add_child(places_menu_label);
-		   	places_menu_box.add_child(PopupMenu.arrowIcon(St.Side.BOTTOM));
-		   	places_menu_indicator.add_actor(places_menu_box);
-		};
-	};
-	
-	// display Activities label ; take care of locked session to not display Activities label on it
-	if (REMOVE_ACTIVITIES) {
-		let activities_indicator = Main.panel.statusArea['activities'];
-		if (activities_indicator && !Main.sessionMode.isLocked) {
-			activities_indicator.container.show();
-		};
-	}
 }

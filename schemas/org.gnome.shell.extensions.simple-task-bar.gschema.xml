@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<schemalist>
+	<schema id="org.gnome.shell.extensions.simple-task-bar" path="/org/gnome/shell/extensions/simple-task-bar/">
+		<key name="icon-size" type="i">
+			<default>20</default>
+		</key>
+
+		<key name="hidden-opacity" type="i">
+			<default>127</default>
+		</key>
+
+		<key name="display-workspaces" type="b">
+			<default>true</default>
+		</key>
+
+		<key name="display-last-workspace" type="b">
+			<default>true</default>
+		</key>
+
+		<key name="display-custom-workspaces" type="b">
+			<default>false</default>
+		</key>
+
+		<key name="display-sticky-workspace" type="b">
+			<default>true</default>
+		</key>
+
+		<key name="custom-workspace-labels" type="s">
+			<default>"A,BB,CCC,DDDD"</default>
+		</key>
+
+		<key name="sticky-workspace-label" type="s">
+			<default>"0"</default>
+		</key>
+
+		<key name="remove-activities" type="b">
+			<default>true</default>
+		</key>
+
+		<key name="places-menu-icon" type="b">
+			<default>true</default>
+		</key>
+	</schema>
+</schemalist>
