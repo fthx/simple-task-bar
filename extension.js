@@ -188,8 +188,10 @@ const WindowList = new Lang.Class({
 		            box.connect('button-press-event', Lang.bind(this, function() {
 		            							this._activateWindow(metaWorkspace, metaWindow); } ));
 		            box.icon = box.app.create_icon_texture(this.settings.get_int("icon-size"));
-		            let iconEffect = new Clutter.DesaturateEffect();
-                	box.icon.add_effect(iconEffect);
+		            if (this.settings.get_boolean("desaturated-icons")) {
+						let iconEffect = new Clutter.DesaturateEffect();
+						box.icon.add_effect(iconEffect);
+					}
 		            if (metaWindow.is_hidden()) {
 						box.icon.set_opacity(this.settings.get_int("hidden-opacity")); box.style_class = 'hidden-app';
 		            }
