@@ -5,6 +5,10 @@
 			<default>20</default>
 		</key>
 
+		<key name="desaturated-icons" type="b">
+			<default>false</default>
+		</key>
+
 		<key name="hidden-opacity" type="i">
 			<default>127</default>
 		</key>
@@ -39,6 +43,14 @@
 
 		<key name="places-menu-icon" type="b">
 			<default>true</default>
+		</key>
+
+		<key name="show-window-titles" type="b">
+			<default>true</default>
+		</key>
+
+		<key name="padding-between-workspaces" type="i">
+			<default>0</default>
 		</key>
 	</schema>
 </schemalist>

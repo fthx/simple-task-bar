@@ -206,6 +206,14 @@ const WindowList = new Lang.Class({
             
             // create all workspaces labels and buttons
             if (this.settings.get_boolean("display-workspaces")) {
+				// add an empty/non-interactive button for padding; add it before the actual Workspace button
+				if (this.settings.get_int("padding-between-workspaces") > 0) {
+					this.padding_box = new St.Bin({visible: true,
+						reactive: false, can_focus: false, track_hover: false});
+					this.padding_box.set_width(this.settings.get_int("padding-between-workspaces"));
+					this.apps_menu.add_actor(this.padding_box);
+				}
+
 		    	this.ws_box = new St.Bin({visible: true, 
 								reactive: true, can_focus: true, track_hover: true});
 				this.ws_box.label = new St.Label({y_align: Clutter.ActorAlign.CENTER});
@@ -244,9 +252,11 @@ const WindowList = new Lang.Class({
 	            box.app = this.tracker.get_window_app(box.window);
                 box.connect('button-press-event', Lang.bind(this, function() {
                 							this._activateWindow(metaWorkspace, metaWindow); } ));
-                box.icon = box.app.create_icon_texture(this.settings.get_int("icon-size"));
-                let iconEffect = new Clutter.DesaturateEffect();
-                box.icon.add_effect(iconEffect);
+				box.icon = box.app.create_icon_texture(this.settings.get_int("icon-size"));
+				if (this.settings.get_boolean("desaturated-icons")) {
+					let iconEffect = new Clutter.DesaturateEffect();
+					box.icon.add_effect(iconEffect);
+				}
                 if (metaWindow.is_hidden()) {
 					box.icon.set_opacity(this.settings.get_int("hidden-opacity")); box.style_class = 'hidden-app';
                 }
@@ -268,14 +278,21 @@ const WindowList = new Lang.Class({
     },
     
 	// displays the focused window title
-	_updateTitle: function() {
-		if (global.display.get_focus_window()) {
-			this.window_label = global.display.get_focus_window().get_title();
+    _updateTitle: function() {
+    	if (global.display.get_focus_window()) {
+			if (this.settings.get_boolean("show-window-titles")) {
+				this.window_label = global.display.get_focus_window().get_title();
+			} else {
+				// only show app name
+				if (this.tracker && this.tracker.get_window_app(global.display.get_focus_window())) { // in case there is no window app, e.g. gnome extension: Drop-Down-Terminal or reenabling extension
+					this.window_label = this.tracker.get_window_app(global.display.get_focus_window()).get_name();
+				}
+			}
 			if (this.window_label) {
 				AppMenu._label.set_text(this.window_label);
 			}
-		};
-	},
+    	};
+    },
     
     // hover on app icon button b shows its window title tt
     _onHover: function(b, tt) {

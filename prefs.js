@@ -53,9 +53,9 @@ const MyPrefsWidget = new GObject.Class({
 
     // manually add the keys to the arrays in this function
     _get_bind_property : function (key) {
-        let ints = ['hidden-opacity', 'icon-size'];
+        let ints = ['hidden-opacity', 'icon-size', 'padding-between-workspaces'];
         let strings = ['sticky-workspace-label', 'custom-workspace-labels'];
-        // let bools = ['places-menu-icon', 'remove-activities', 'display-sticky-workspace', 'display-custom-workspaces', 'display-last-workspace', 'display-workspaces',];
+        // let bools = ['places-menu-icon', 'remove-activities', 'display-sticky-workspace', 'display-custom-workspaces', 'display-last-workspace', 'display-workspaces', 'desaturated-icons', 'show-window-titles'];
 
         if (ints.includes(key)) {
             return "value"; // spinbox.value
