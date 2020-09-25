@@ -100,9 +100,7 @@
                   <object class="GtkLabel" id="desaturated-icons-label">
                     <property name="visible">True</property>
                     <property name="can_focus">False</property>
-                    <property name="tooltip_text" translatable="yes">Desatured icons on the task bar. (Default = false)
-
-</property>
+                    <property name="tooltip_text" translatable="yes">Desatured icons on the task bar. (Default = false)</property>
                     <property name="label" translatable="yes">Desaturated icons</property>
                     <property name="xalign">0</property>
                   </object>
@@ -116,7 +114,7 @@
                   <object class="GtkSwitch" id="desaturated-icons">
                     <property name="visible">True</property>
                     <property name="can_focus">True</property>
-                    <property name="tooltip_text" translatable="yes">Desaturate the task bar icons. (Default=false)</property>
+                    <property name="tooltip_text" translatable="yes">Desaturate the task bar icons. (Default = false)</property>
                     <property name="valign">center</property>
                   </object>
                   <packing>
@@ -339,7 +337,7 @@
                   <object class="GtkLabel" id="custom_workspace_label_label">
                     <property name="visible">True</property>
                     <property name="can_focus">False</property>
-                    <property name="tooltip_text" translatable="yes">Custom workspaces labels. (string list separated by commas, as long as needed, no bug if list is too short)</property>
+                    <property name="tooltip_text" translatable="yes">Custom workspaces labels. (String list separated by commas, as long as needed, no bug if list is too short)</property>
                     <property name="valign">center</property>
                     <property name="label" translatable="yes">Custom workspace labels</property>
                     <property name="xalign">0</property>
@@ -569,7 +567,7 @@
                   <object class="GtkLabel" id="padding-between-workspaces-label">
                     <property name="visible">True</property>
                     <property name="can_focus">False</property>
-                    <property name="tooltip_text" translatable="yes">Icon size for apps in task bar. (Default  =  20)</property>
+                    <property name="tooltip_text" translatable="yes">Padding between workspaces groups. (Default  =  0)</property>
                     <property name="label" translatable="yes">Padding between workspaces</property>
                     <property name="xalign">0</property>
                   </object>
