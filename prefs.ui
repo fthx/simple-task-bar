@@ -551,8 +551,6 @@
         </child>
         <child>
           <object class="GtkListBoxRow" id="PaddingBetweenWorkspaces">
-            <property name="width_request">100</property>
-            <property name="height_request">80</property>
             <property name="visible">True</property>
             <property name="can_focus">True</property>
             <child>
