@@ -5,7 +5,7 @@
 			<default>20</default>
 		</key>
 
-		<key name="desaturated-icons" type="b">
+		<key name="use-symbolic-icons" type="b">
 			<default>false</default>
 		</key>
 

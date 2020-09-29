@@ -83,7 +83,7 @@
           </object>
         </child>
         <child>
-          <object class="GtkListBoxRow" id="DesaturatedIcons">
+          <object class="GtkListBoxRow" id="UseSymbolicIcons">
             <property name="width_request">100</property>
             <property name="height_request">80</property>
             <property name="visible">True</property>
@@ -101,7 +101,7 @@
                     <property name="visible">True</property>
                     <property name="can_focus">False</property>
                     <property name="tooltip_text" translatable="yes">Desaturated icons on the task bar. (Default = false)</property>
-                    <property name="label" translatable="yes">Desaturated icons</property>
+                    <property name="label" translatable="yes">Use symbolic icons</property>
                     <property name="xalign">0</property>
                   </object>
                   <packing>
@@ -111,7 +111,7 @@
                   </packing>
                 </child>
                 <child>
-                  <object class="GtkSwitch" id="desaturated-icons">
+                  <object class="GtkSwitch" id="use-symbolic-icons">
                     <property name="visible">True</property>
                     <property name="can_focus">True</property>
                     <property name="tooltip_text" translatable="yes">Desaturate the task bar icons. (Default = false)</property>

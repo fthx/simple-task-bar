@@ -188,9 +188,12 @@ const WindowList = new Lang.Class({
 		            box.connect('button-press-event', Lang.bind(this, function() {
 		            							this._activateWindow(metaWorkspace, metaWindow); } ));
 		            box.icon = box.app.create_icon_texture(this.settings.get_int("icon-size"));
-		            if (this.settings.get_boolean("desaturated-icons")) {
+		            if (this.settings.get_boolean("use-symbolic-icons")) {
+						box.add_style_class_name("icon-mode-symbolic");
+
+						// desaturate icon in case there is no symbolic icon
 						let iconEffect = new Clutter.DesaturateEffect();
-						box.icon.add_effect(iconEffect);
+						box.add_effect(iconEffect);
 					}
 		            if (metaWindow.is_hidden()) {
 						box.icon.set_opacity(this.settings.get_int("hidden-opacity")); box.style_class = 'hidden-app';
@@ -255,17 +258,24 @@ const WindowList = new Lang.Class({
                 box.connect('button-press-event', Lang.bind(this, function() {
                 							this._activateWindow(metaWorkspace, metaWindow); } ));
 				box.icon = box.app.create_icon_texture(this.settings.get_int("icon-size"));
-				if (this.settings.get_boolean("desaturated-icons")) {
-					let iconEffect = new Clutter.DesaturateEffect();
-					box.icon.add_effect(iconEffect);
-				}
+
                 if (metaWindow.is_hidden()) {
 					box.icon.set_opacity(this.settings.get_int("hidden-opacity")); box.style_class = 'hidden-app';
                 }
                 else {
                 	 if (metaWindow.has_focus()) {box.style_class = 'focused-app';}
                 	 else {box.style_class = 'unfocused-app';}
-                };
+				};
+
+				// turn icons into symbolic icons
+				if (this.settings.get_boolean("use-symbolic-icons")) {
+					box.add_style_class_name("icon-mode-symbolic");
+
+					// desaturate icon in case there is no symbolic icon
+					let iconEffect = new Clutter.DesaturateEffect();
+					box.add_effect(iconEffect);
+				}
+
                	box.set_child(box.icon);
                	box.connect('notify::hover', Lang.bind(this, function() {
                 							this._onHover(box, box.tooltip); } ));
